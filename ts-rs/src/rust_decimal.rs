@@ -2,7 +2,7 @@ use std::sync::OnceLock;
 
 use rust_decimal::Decimal;
 
-use crate::TS;
+use crate::{Config, TS};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DecimalSerdeShape {
@@ -231,24 +231,24 @@ impl TS for Decimal {
     type WithoutGenerics = Decimal;
     type OptionInnerType = Decimal;
 
-    fn decl() -> String {
-        panic!("{} cannot be declared", <Self as TS>::name())
+    fn decl(cfg: &Config) -> String {
+        panic!("{} cannot be declared", <Self as TS>::name(cfg))
     }
 
-    fn decl_concrete() -> String {
-        panic!("{} cannot be declared", <Self as TS>::name())
+    fn decl_concrete(cfg: &Config) -> String {
+        panic!("{} cannot be declared", <Self as TS>::name(cfg))
     }
 
-    fn name() -> String {
+    fn name(_: &Config) -> String {
         decimal_ts_binding().to_owned()
     }
 
-    fn inline() -> String {
-        <Self as TS>::name()
+    fn inline(cfg: &Config) -> String {
+        <Self as TS>::name(cfg)
     }
 
-    fn inline_flattened() -> String {
-        panic!("{} cannot be flattened", <Self as TS>::name())
+    fn inline_flattened(cfg: &Config) -> String {
+        panic!("{} cannot be flattened", <Self as TS>::name(cfg))
     }
 }
 
@@ -261,7 +261,7 @@ mod tests {
         let decimal = Decimal::new(123, 2); // 1.23
         let json = serde_json::to_value(&decimal).unwrap();
 
-        match Decimal::name().as_str() {
+        match Decimal::name(&Config::default()).as_str() {
             "number" => assert!(json.is_number()),
             "string" => assert!(json.is_string()),
             other => panic!("unexpected type: {}", other),
